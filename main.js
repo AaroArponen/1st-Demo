@@ -2,16 +2,19 @@ main();
 
 
 function main() {
-    const canvas = document.querySelector("#glCanvas");
+    // const canvas = document.querySelector("#glCanvas");
+    var canvas = document.getElementById("glCanvas");
+    console.log(canvas);
     const gl = canvas.getContext("webgl");
+    console.log(gl);
     
     if (gl === null) {
         alert("Unable to initialize WebGL. Your browser or machine may not support it.");
         return;
     }
 
-    var vertexShaderSource = document.getElementById("2d-vertex-shader");
-    var fragmentShaderSource = document.getElementById("2d-fragment-shader");
+    var vertexShaderSource = document.getElementById("2d-vertex-shader").text;
+    var fragmentShaderSource = document.getElementById("2d-fragment-shader").text;
     var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
@@ -20,10 +23,15 @@ function main() {
     var positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     
+    var resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
+
     var positions = [
-        0.4, 0.1,
-        1.0, 0.4,
-        0.9, 0.8,
+        10, 20,
+        80, 20,
+        10, 30,
+        10, 30,
+        80, 20,
+        80, 30,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
@@ -32,22 +40,22 @@ function main() {
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(program);
-    gl.enableVertexAtribArray(positionAttributeLocation);
-    gl.bindBuffer(gl.ARRAY_BUFFER, poisitionBuffer);
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
     var size = 2;
     var type = gl.FLOAT;
     var normalize = false;
     var stride = 0;
     var offshade = 0;
-    gl.vertexAtrribPointer(
+    gl.vertexAttribPointer(
         positionAttributeLocation, size, type, normalize, stride, offset);
 
     var primitiveType = gl.TRIANGLES;
     var offset = 0;
-    var count = 3;
-    gl.drawArrays(primitiveType, offset, type);
-
+    var count = 6;
+    gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.heigth);
+    gl.drawArrays(primitiveType, offset, count);
 }
 
 function createProgram(gl, vertexShader, fragmentShader){
@@ -67,10 +75,13 @@ function createShader (gl, type, source) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
-    var success = gl.getShaderParameter(gl.COMPILE_STATUS);
-    if (success ){
+    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    console.log(success);
+    if (success) {
         return shader;
     }
-    console.log(gl.GetShaderInfoLog)(shader));
+    console.log("shader ei compilaantunut, alla virhe");
+    console.log(gl.getShaderInfoLog(shader));
+    
     gl.deleteShader(shader);
 }
